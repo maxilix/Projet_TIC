@@ -1,2 +1,2 @@
 # Projet_TIC
-Projet sécurité TIC Mater1
+Projet sécurité TIC Master1
