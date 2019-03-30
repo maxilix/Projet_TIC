@@ -41,6 +41,8 @@ def decode_qrcode(certificateFileName):
 	return str(result)[2:-3]
 
 
+
+
 #name = input("Nom : ")
 #firstname = input("Prénon : ")
 texteFileName = "tt"
