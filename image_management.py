@@ -48,7 +48,7 @@ def decode_qrcode(certificateFileName):
 texteFileName = "tt"
 qrcodeFileName = "qq"
 
-create_texte_image("Morgane","Vollmer",texteFileName)
+create_texte_image("Clément","Hoffmann",texteFileName)
 create_qrcode_image("https://p-fb.net/fileadmin/SecuTIC/2018_2019/Securite_TIC_Projet_2018-2019.pdf",qrcodeFileName)
 create_assembled_image(texteFileName,qrcodeFileName,"background.png")
 print("\n\n"+ decode_qrcode("certificate.png"))
