@@ -24,9 +24,8 @@ def google_authentificator_OTP_generator(secret):
     m = int(date) // 30
     hashMac = str(subprocess.run('echo -n {} | openssl sha1 -hmac {}'.format(date, key), shell=True, stdout=subprocess.PIPE))
     hashMac = hashMac[hashMac.find('stdout') + 18 : -4]
-    toncatedHashMac = hashMac[-4:]
-    toncatedHashMac = '0' + toncatedHashMac[1:]
-    otp = str(int(toncatedHashMac, 16) % 1000000).zfill(6)
+    truncatedHashMac = hex(int(hashMac,16) & 0x7fffffff)
+    otp = str(int(truncatedHashMac, 16) % 1000000).zfill(6)
     return (date,otp)
 
 def CreerOTP():

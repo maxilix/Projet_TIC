@@ -31,10 +31,17 @@ def create_qrcode_image(data):
 
 
 def create_assembled_stegano_image(firstName, name, entitle, steganoMessage, qrcodeData):
+	path = "./{}_{}/".format(name.replace(" ","-"),firstName.replace(" ","-"))
+
 	textFileName = create_texte_image(firstName, name, entitle)
+
+
+	f=open(path+"query.tsq",'rb')
+	qrcodeData=f.readline()
+	print(qrcodeData)
+	f.close()
 	qrcodeFileName = create_qrcode_image(qrcodeData)
 
-	path = "./{}_{}/".format(name.replace(" ","-"),firstName.replace(" ","-"))
 
 	cmd = subprocess.Popen('''composite -gravity center {0} background.png before_stegano.png'''.format(textFileName), shell=True, stdout=subprocess.PIPE)
 	cmd.communicate()
