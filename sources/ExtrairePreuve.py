@@ -8,104 +8,119 @@ import data_management
 import time
 from PIL import Image
 
-def ExtrairePreuve(client,imageB64):
+def ExtrairePreuve(client,certificateFileNime):
+
+	path = '''../clients/{}/'''.format(client[0].replace(" ","-"))
+	certificateImage = Image.open(path+certificateFileNime)
 
 
-	fichier = open("base64_certificate.tmp","w")
-	fichier.write(imageB64)
-	fichier.close()
+	print("\nCheck image size")
+	if (certificateImage.size == (1753,1240)):
+		print("\t--> Right size : x=1753 and y=1240")
+	else :
+		print("\t--> Wrong size")
+		print("\nAuthentification FAILED")
+		remove_temp_file(path)
+		return "Authentification FAILED : Wrong image size."
 
-	cmd = subprocess.Popen('''openssl base64 -base64 -d -in base64_certificate.tmp -out certificateImage.png''', shell = True, stdout = subprocess.PIPE)
-	cmd.communicate()
 
-	certificateImage = Image.open('certificateImage.png')
-
-	print("Block recuperation")
-
+	print("\nExtract block data from steganography : ", end = '')
 	block = image_management.recuperer(certificateImage,2634)
 	(blockNameReturned, blockFirstNameReturned, blockEntitleReturned, blockTimestampAsciiReturned) = data_management.cut_block(block)
-	print("Block recuperated")
+	print("OK")
 	
-	name_firstName_entitled = blockNameReturned + "_" + blockFirstNameReturned + "_" + blockEntitleReturned
-
-	path = '''../clients/{0}/{1}/'''.format(client[0].replace(" ","-"),name_firstName_entitled.replace(" ","-"))
-
-	print("Check if this repositery exists")
-	if (os.path.isdir(path)):
-		print("Found repositery")
+	
+	print("\nCheck if repositery exists")
+	if (os.path.isdir(path+"{0}_{1}_{2}/".format(blockNameReturned.replace(" ","-"),blockFirstNameReturned.replace(" ","-"),blockEntitleReturned.replace(" ","-")))):
+		print("\t--> Found repositery")
 	else :
-		print("No repositery for this name")
-		print("Authentification FAILED")
+		print("\t--> No repositery for this name")
+		print("\nAuthentification FAILED")
+		remove_temp_file(path)
 		return "Authentification FAILED : No certificate delivery for this name."
 
 
-	print("Extract timestamp data")
-	chekingTimestampFile = open("timestamp_sign.tmp",'wb')
+	print("\nExtract timestamp data from block : ", end='')
+	chekingTimestampFile = open(path + "timestamp_sign.tmp",'wb')
 	blockTimestampAsciiReturnedList = [blockTimestampAsciiReturned[2*i]+blockTimestampAsciiReturned[2*i+1] for i in range(len(blockTimestampAsciiReturned)//2)]
 	for octet in blockTimestampAsciiReturnedList:
 		chekingTimestampFile.write(int(octet,16).to_bytes(1,byteorder='big',signed=False))
 	chekingTimestampFile.close()
-	print("Timestamp data extracted")
+	print("OK")
 
 
-
-	#Verification du Bblock en créant un fichier ckeck_personnal_data
-	print("Block verification")
-	fichier = open("personnal_data.tmp","w")
+	print("\nBlock verification :")
+	print("\t--> Create personnal_data file")
+	fichier = open(path + "personnal_data.tmp","w")
 	fichier.write(blockNameReturned +"\n")
 	fichier.write(blockFirstNameReturned + "\n")
 	fichier.write(blockEntitleReturned + "\n")
 	fichier.close()
-
-	cmd = subprocess.Popen('''openssl ts -query -data personnal_data.tmp -sha1 -no_nonce -out query.tmp''', shell=True,stdout=subprocess.PIPE)
+	print("\t--> Create query file")
+	cmd = subprocess.Popen('''openssl ts -query -data {0}personnal_data.tmp -sha1 -no_nonce -out {0}query.tmp'''.format(path), shell=True,stdout=subprocess.PIPE)
 	cmd.communicate()
-
-	cmd = subprocess.Popen('''openssl ts -verify -in timestamp_sign.tmp -queryfile query.tmp -CAfile ../ressources/cacert.pem -untrusted ../ressources/tsa.crt''', shell=True, stdout=subprocess.PIPE)
+	print("\t--> Verify TSA sing")
+	cmd = subprocess.Popen('''openssl ts -verify -in {0}timestamp_sign.tmp -queryfile {0}query.tmp -CAfile ../ressources/cacert.pem -untrusted ../ressources/tsa.crt'''.format(path), shell=True, stdout=subprocess.PIPE)
 	(result,ignore) = cmd.communicate()
 	if ('OK' in str(result)):
-		print("Block verification completed")
+		print("\t--> Block verification completed")
 	else:
-		print("Block verification failed \n")
-		print("Authentification FAILED")
+		print("\t--> Block verification failed")
+		print("\nAuthentification FAILED")
+		remove_temp_file(path)
 		return "Authentification FAILED : Data block has been altered."
 
-	# VERIFICATION QRCODE
-	print("qrCode verification")
 
+	print("\nQrCode verification :")
 	if (True):
-		print("qrCode verification completed")
+		print("\t--> QrCode verification completed")
 	else:
-		print("qrCode verification failed \n")
-		print("Authentification FAILED")
-		return "Authentification FAILED : qrCode has been altered."
+		print("\t--> QrCode verification failed")
+		print("\nAuthentification FAILED")
+		remove_temp_file(path)
+		return "Authentification FAILED : QrCode has been altered."
 
-	# Reconstruction de l'image
+
+	print("\nRecreate image certificate :")
+	print("\t--> Create QrCode sign")
 	qrcodeData="tata"
-	image_management.create_assembled_stegano_image("./", blockNameReturned, blockFirstNameReturned, blockEntitleReturned, block, qrcodeData)
-
-	# check différences !
-	cmd = subprocess.Popen('''compare -metric mae certificateImage.png certificate.png diff.png''', shell=True, stdout=subprocess.PIPE)
-	(result,ignore) = cmd.communicate()
-	print("\n1\n")
-	print(result)
-	print("\n2\n")
-	print(ignore)
-#red: 0 (0)
-#green: 0 (0)
-#blue: 0 (0)
-#all: 0 (0)
-	time.sleep(1)
-
-	#subprocess.run('''rm certificateImage.png''', shell = True, stdout = subprocess.PIPE)
-	subprocess.run('''rm base64_certificate.tmp''', shell = True, stdout = subprocess.PIPE)
-	subprocess.run('''rm timestamp_sign.tmp''', shell = True, stdout = subprocess.PIPE)
-	subprocess.run('''rm personnal_data.tmp''', shell = True, stdout = subprocess.PIPE)
-	subprocess.run('''rm query.tmp''', shell = True, stdout = subprocess.PIPE)
-	#subprocess.run('''rm certificate.png''', shell = True, stdout = subprocess.PIPE)
-	subprocess.run('''rm diff.png''', shell = True, stdout = subprocess.PIPE)
+	print("\t--> Create assembled stego cetificate")
+	image_management.create_assembled_stegano_image(path, blockNameReturned, blockFirstNameReturned, blockEntitleReturned, block, qrcodeData)
+	print("\t--> Recreate image certificate completed")
 
 
-	print("Authentification COMPLETED")
+	print("\nCheck differences between sent and recreated certificate :")
+	if image_management.check_identity_images(path,certificateFileNime,"certificate.png"):
+		print("\t--> Check differences completed")
+	else:
+		print("\t--> Check differences failed")
+		print("\nAuthentification FAILED")
+		remove_temp_file(path)
+		return "Authentification FAILED : Image certificate has been altered."
+
+
+	print("\nAuthentification COMPLETED")
+	remove_temp_file(path)
 	return "Authentification COMPLETED"
+
+
+def remove_temp_file(path):
+	if os.path.isfile("{}certificate.png".format(path)):
+		subprocess.run('''rm {}certificate.png'''.format(path)     , shell = True, stdout = subprocess.PIPE)
+	
+	if os.path.isfile("{}sent_certificate.png".format(path)):
+		subprocess.run('''rm {}sent_certificate.png'''.format(path), shell = True, stdout = subprocess.PIPE)
+	
+	if os.path.isfile("{}sent_certificate.b64".format(path)):
+		subprocess.run('''rm {}sent_certificate.b64'''.format(path), shell = True, stdout = subprocess.PIPE)
+	
+	if os.path.isfile("{}timestamp_sign.tmp".format(path)):
+		subprocess.run('''rm {}timestamp_sign.tmp'''.format(path)  , shell = True, stdout = subprocess.PIPE)
+	
+	if os.path.isfile("{}personnal_data.tmp".format(path)):
+		subprocess.run('''rm {}personnal_data.tmp'''.format(path)  , shell = True, stdout = subprocess.PIPE)
+	
+	if os.path.isfile("{}query.tmp".format(path)):
+		subprocess.run('''rm {}query.tmp'''.format(path)           , shell = True, stdout = subprocess.PIPE)
 
 

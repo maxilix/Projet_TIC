@@ -69,6 +69,26 @@ def decode_qrcode(certificateFileName):
 
 
 
+def check_identity_images(path, fileName1, fileName2):
+	
+	im1 = Image.open(path+fileName1)
+	im2 = Image.open(path+fileName2)
+
+	if (im1.size!=im2.size):
+		return False
+
+	im1Data = list(im1.getdata())
+	im2Data = list(im2.getdata())
+
+	for i in range(len(im1Data)):
+		if (im1Data[i] != im2Data[i]):
+			return False
+
+	return True
+
+
+
+
 def vers_8bit(c):
 	chaine_binaire = bin(ord(c))[2:]
 	return "0"*(8-len(chaine_binaire))+chaine_binaire

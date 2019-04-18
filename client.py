@@ -6,8 +6,8 @@ import base64
 import subprocess
 import time
 
-from datetime import timedelta
-from datetime import datetime
+#from datetime import timedelta
+#from datetime import datetime
 
 
 
@@ -37,7 +37,7 @@ def start_client(clientName, passphrase, user):
 		sys.exit(1)
 	s.sendall(clientName.encode('UTF-8'))
 	if(s.recv(1024).decode('UTF-8') == "Hi, plz send moni"):
-		print('name not in server database')
+		print('Name not in server database')
 		s.close()
 		sys.exit(1)
 	otpClient = CreerOTP(base64.b32encode(passphrase.encode('UTF-8')))
@@ -50,9 +50,10 @@ def start_client(clientName, passphrase, user):
 			s.close()
 			sys.exit(1)
 	choice = 0
-	print('CP')
+
 	while(int(choice) != 1 and int(choice) != 2):
-		choice = input('[1] generated certificate  or  [2] verify certificate  : ')
+		print("[1] generated certificate\n[2] verify certificate")
+		choice = input("choice : ")
 	if (int(choice) == 1):
 		s.sendall("generate_certificate".encode('UTF-8'))
 		s.sendall(str(user).encode('UTF-8'))
@@ -65,30 +66,44 @@ def start_client(clientName, passphrase, user):
 
 
 def send_certificate(s):
-	certificateFileName = input("Filename's certificate in curent path : ")
-	cmd = subprocess.Popen('''openssl base64 -base64 -e -in {0} -out base64_{0}'''.format(certificateFileName), shell = True, stdout = subprocess.PIPE)
-	cmd.communicate()
-	fd = open("base64_"+certificateFileName)
+	certificateFileName = input("Filename's certificate in curent path : (without '.png') ")
+	subprocess.run('''openssl base64 -base64 -e -in {0}.png -out {0}.b64'''.format(certificateFileName), shell = True, stdout = subprocess.PIPE)
+
+	fd = open(certificateFileName + ".b64")
 	lines = fd.readlines()
 	fd.close()
-	print("send first line")
-	for line in lines:
-		s.sendall(line.encode('UTF-8'))
-		pause()
-	print("sent")
-	s.sendall("finitiondutransfertdeimageB64".encode('UTF-8'))
+	subprocess.run('''rm {0}.b64'''.format(certificateFileName), shell = True, stdout = subprocess.PIPE)
 
-def pause():
-	debut = datetime.now()
-	while (True):
-		if (datetime.now()-debut > timedelta(seconds=0, milliseconds=0, microseconds=10)):
+	while True:
+		print("\nReady to send " + str(len(lines)) + " lines.")
+		s.sendall(str(len(lines)).encode('UTF-8'))
+		time.sleep(0.5)
+
+		print("\t--> Sending in progress : ",end='')
+		for line in lines:
+			s.sendall(line.encode('UTF-8'))
+		print("OK")
+		s.sendall("finitiondutransfertdeimageB64".encode('UTF-8'))
+		if "completed" in s.recv(1024).decode('UTF-8'):
+			print("\t--> Reception completed")
 			break
+		else:
+			print("\t--> Reception failed")
+			time.sleep(0.5)
+
+
+
+#def pause(muS):
+#	debut = datetime.now()
+#	while (True):
+#		if (datetime.now()-debut > timedelta(seconds=0, milliseconds=0, microseconds=muS)):
+#			break
 
 
 
 
-#user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée" ]
+user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée" ]
 #user = [ "Beltzer"  , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python"  ]
-user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
+#user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
 
 start_client("CertifPlus", "LAME6SECRET",user)
