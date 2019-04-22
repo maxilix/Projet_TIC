@@ -26,7 +26,7 @@ def start_server():
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	s.bind(('', PORT_NUMBER))
 	s.listen()
-	print("Serveur stated, enter not empty line to exit\n")
+	print("Serveur started, enter not empty line to exit\n")
 	pid = os.fork()
 	if not pid :
 		run_server(s)
@@ -55,7 +55,7 @@ def run_server(s):
 				client = customer.copy()
 				connexion.sendall("Please generate OTP with shared secret".encode('UTF-8'))
 		if not clientNameOk:
-			connexion.sendall("Hi, plz send money".encode('UTF-8'))
+			connexion.sendall("It seems that you are not registered in our database. Please check you spelled your name correctly or contact our customer service to get registered.".encode('UTF-8'))
 	print("Conected client : " + client[0])
 	while True:
 		otpServer = CreerOTP(client[1])
@@ -71,7 +71,7 @@ def run_server(s):
 		certificateInfos = connexion.recv(1024).decode('UTF-8')[2:-2]
 		certificateInfos = certificateInfos.split("', '")
 		CreerAttestation.CreerAttestation(client, certificateInfos)
-		connexion.sendall("certificate has been generated and sent to {}".format(certificateInfos[2]).encode('UTF-8'))
+		connexion.sendall("Certificate has been generated and sent to {}".format(certificateInfos[2]).encode('UTF-8'))
 
 	else:
 		# VERIFY CERTIFICATE
@@ -127,4 +127,3 @@ def get_clients():	# Return a list of clients' infos
 
 
 start_server()
-

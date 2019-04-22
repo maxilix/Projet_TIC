@@ -8,10 +8,10 @@ import data_management
 import time
 from PIL import Image
 
-def ExtrairePreuve(client,certificateFileNime):
+def ExtrairePreuve(client,certificateFileName):
 
 	path = '''../clients/{}/'''.format(client[0].replace(" ","-"))
-	certificateImage = Image.open(path+certificateFileNime)
+	certificateImage = Image.open(path+certificateFileName)
 
 
 	print("\nCheck image size")
@@ -90,7 +90,7 @@ def ExtrairePreuve(client,certificateFileNime):
 
 
 	print("\nCheck differences between sent and recreated certificate :")
-	if image_management.check_identity_images(path,certificateFileNime,"certificate.png"):
+	if image_management.check_identity_images(path,certificateFileName,"certificate.png"):
 		print("\t--> Check differences completed")
 	else:
 		print("\t--> Check differences failed")

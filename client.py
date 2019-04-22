@@ -36,24 +36,27 @@ def start_client(clientName, passphrase, user):
 		print("Unable to connect")
 		sys.exit(1)
 	s.sendall(clientName.encode('UTF-8'))
-	if(s.recv(1024).decode('UTF-8') == "Hi, plz send moni"):
+	if(s.recv(1024).decode('UTF-8') == "It seems that you are not registered in our database. Please check you spelled your name correctly or contact our customer service to get registered."):
 		print('Name not in server database')
 		s.close()
 		sys.exit(1)
+	print('Name found in database - Authentification...')
 	otpClient = CreerOTP(base64.b32encode(passphrase.encode('UTF-8')))
 	s.sendall(otpClient.encode('UTF-8'))
 	if(s.recv(1024).decode('UTF-8') == "Please generate OTP with shared secret"):
 		otpClient = CreerOTP(base64.b32encode(passphrase.encode('UTF-8')))
 		s.sendall(otpClient.encode('UTF-8'))
+		# la génération d'OTP fonctionnat avec des fenêtres de temps de 30s, il est possible qu'il y ait un échec si l'opération est réalisée à la limite d'une de ces fenêtres. Si l'opération échoue deux fois, c'est que le secret n'est pas le même des deux côtés. 
 		if(s.recv(1024).decode('UTF-8') == "Please generate OTP with shared secret"):
 			print('wrong passphrase')
 			s.close()
 			sys.exit(1)
+	print('Authentification succeeded')
 	choice = 0
 
 	while(int(choice) != 1 and int(choice) != 2):
-		print("[1] generated certificate\n[2] verify certificate")
-		choice = input("choice : ")
+		print("[1] generate certificate\n[2] verify certificate")
+		choice = input("Choice : ")
 	if (int(choice) == 1):
 		s.sendall("generate_certificate".encode('UTF-8'))
 		s.sendall(str(user).encode('UTF-8'))
@@ -66,7 +69,7 @@ def start_client(clientName, passphrase, user):
 
 
 def send_certificate(s):
-	certificateFileName = input("Filename's certificate in curent path : (without '.png') ")
+	certificateFileName = input("Path to certificate's filename : (without '.png') ")
 	subprocess.run('''openssl base64 -base64 -e -in {0}.png -out {0}.b64'''.format(certificateFileName), shell = True, stdout = subprocess.PIPE)
 
 	fd = open(certificateFileName + ".b64")
@@ -106,4 +109,4 @@ user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée"
 #user = [ "Beltzer"  , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python"  ]
 #user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
 
-start_client("CertifPlus", "LAME6SECRET",user)
+start_client("CertifPlus", "LAME6SECRET", user)
