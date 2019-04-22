@@ -56,7 +56,7 @@ def run_server(s):
 				connexion.sendall("Please generate OTP with shared secret".encode('UTF-8'))
 		if not clientNameOk:
 			connexion.sendall("It seems that you are not registered in our database. Please check you spelled your name correctly or contact our customer service to get registered.".encode('UTF-8'))
-	print("Conected client : " + client[0])
+	print("Connected client : " + client[0])
 	while True:
 		otpServer = CreerOTP(client[1])
 		otpClient = connexion.recv(32).decode('UTF-8')
