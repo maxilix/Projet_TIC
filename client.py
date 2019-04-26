@@ -103,10 +103,13 @@ def send_certificate(s):
 #			break
 
 
+clientName = "CertifPlus"
+clientPassphrase = "LameSecret"
 
 
-user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée" ]
+#user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée" ]
 #user = [ "Beltzer"  , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python"  ]
-#user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
+user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
 
-start_client("CertifPlus", "LAME6SECRET", user)
+
+start_client(clientName, clientPassphrase, user)

@@ -3,16 +3,17 @@
 
 import subprocess
 import os
+import smtplib
 import image_management
 import data_management
 
 def CreerAttestation(client,informations):
-	path = "../clients/"+client[0].replace(" ","-")
-	if not (os.path.isdir(path)):
+	pathClient = "../clients/"+client[0].replace(" ","-")+"/"
+	if not (os.path.isdir(pathClient)):
 		print("failded to access to the client repository")
 		return
 
-	path = path+"/"+informations[0].replace(" ","-")+"_"+informations[1].replace(" ","-")+"_"+informations[3].replace(" ","-")+"/"
+	path = pathClient+informations[0].replace(" ","-")+"_"+informations[1].replace(" ","-")+"_"+informations[3].replace(" ","-")+"/"
 	#print(path)
 
 	if not (os.path.isdir(path)):
@@ -23,21 +24,45 @@ def CreerAttestation(client,informations):
 		create_personal_data_file(path, informations[0], informations[1], informations[3])
 		create_query_file(path)
 		create_timestamp_file(path)
+		create_user_auth_data(informations,path)
 
 		biBlock = data_management.create_block(path, informations[0], informations[1], informations[3])
 		qrcodeData = "tata"
 		image_management.create_assembled_stegano_image(path, informations[0], informations[1], informations[3], biBlock, qrcodeData)
 
-		print("generated certificate ...")
+		print("\t--> generated certificate !")
 	else:
 		print("certificate has been already generated")
-	print("sending mail")
-	# send mail
-	print("sent mail")
+	print("sending mail ...")
+	subprocess.run('''echo "Content-Type: image/png\r\nContent-Transfer-Encoding: base64\r\n" > {0}contenu.txt'''.format(path), shell=True,stdout=subprocess.PIPE)
+	subprocess.run('''openssl base64 -base64 -e -in {0}certificate.png >> {0}contenu.txt'''.format(path), shell=True,stdout=subprocess.PIPE)
+	subprocess.run('''echo "basicConstraints=critical,CA:FALSE\r\nextendedKeyUsage=serverAuth,emailProtection\r\nkeyUsage=digitalSignature,keyEncipherment" > {0}cert.cnf'''.format(path), shell=True,stdout=subprocess.PIPE)
+	subprocess.run('''openssl x509 -req -days 3650 -CA {0}ca.cert.pem -CAkey {0}ca.key -CAcreateserial -extfile {1}cert.cnf -in {1}csr.pem -out {1}certifmail.pem'''.format(pathClient,path), shell=True,stdout=subprocess.PIPE)
+	
+	subprocess.run('''openssl cms -sign -in {0}contenu.txt -signer {0}certifmail.pem -inkey {0}key.pem -text | openssl cms -encrypt -out {0}mail.msg -from {1} -to {2} -subject "Votre certificat" -aes256 {0}certifmail.pem'''.format(path,client[2],informations[2]), shell=True,stdout=subprocess.PIPE)
+	f = open(path + "mail.msg",'r')
+	lines = f.readlines()
+	f.close()
+	secureMail = ""
+	for line in lines:
+		secureMail += line
+	s = smtplib.SMTP_SSL("smtp.unilim.fr",465)
+	#s.set_debuglevel(1)
+	#s.login('beltzer01', '1aAzerty')
+	s.sendmail(client[2],informations[2],secureMail)
+	s.close()
+	print("\t--> sent mail !")
+
+
+
+def create_user_auth_data(informations, path):
+	subprocess.run('''openssl ecparam -out {0}key.pem -name prime256v1 -genkey'''.format(path), shell=True,stdout=subprocess.PIPE)
+	subprocess.run('''echo "[req]\r\ndistinguished_name=dn\r\n[dn]\r\n[ext]\r\nbasicConstraints=CA:FALSE\r\nextendedKeyUsage=serverAuth,emailProtection\r\nkeyUsage=digitalSignature,keyEncipherment" > {0}csr.cnf'''.format(path), shell=True,stdout=subprocess.PIPE)
+	subprocess.run('''openssl req -config {0}csr.cnf -new -subj "/CN={1} {2}/emailAddress={3}" -reqexts ext -sha256 -key {0}key.pem -out {0}csr.pem'''.format(path, informations[1], informations[0], informations[2]), shell=True,stdout=subprocess.PIPE)
 
 
 def create_mail_file(path,mail):
-	fichier = open("{}mail".format(path),"w")
+	fichier = open("{}mail_address".format(path),"w")
 	fichier.write(mail + '\n')
 	fichier.close()
 

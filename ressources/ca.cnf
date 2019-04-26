@@ -1,0 +1,13 @@
+[ req ]
+default_keyfile = ca.key
+distinguished_name = req_distinguished_name
+x509_extensions = ext
+
+[ req_distinguished_name ]
+
+[ ext ]
+basicConstraints = critical,CA:true
+extendedKeyUsage = serverAuth,emailProtection
+keyUsage = digitalSignature,keyEncipherment
+subjectKeyIdentifier = hash
+
