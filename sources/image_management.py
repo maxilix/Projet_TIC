@@ -21,7 +21,7 @@ def create_texte_image(path, name, firstName, entitle):
 
 def create_qrcode_image(path, data):
 	qrcodeFileName = "qrcode_image.png"
-	qr = pyqrcode.create(data, error='H', version=10)
+	qr = pyqrcode.create(data)
 	qr.png(path+qrcodeFileName, scale=2)
 	cmd = subprocess.Popen('''mogrify -resize 210x210 {0}'''.format(path+qrcodeFileName), shell=True, stdout=subprocess.PIPE)
 	cmd.communicate()
