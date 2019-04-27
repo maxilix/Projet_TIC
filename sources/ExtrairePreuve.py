@@ -26,6 +26,9 @@ def ExtrairePreuve(client,certificateFileName):
 
 	print("\nExtract block data from steganography : ", end = '')
 	block = image_management.recuperer(certificateImage,2634)
+	f=open(path+"block.txt",'w')
+	f.write(block)
+	f.close()
 	(blockNameReturned, blockFirstNameReturned, blockEntitleReturned, blockTimestampAsciiReturned) = data_management.cut_block(block)
 	print("OK")
 	
@@ -72,7 +75,13 @@ def ExtrairePreuve(client,certificateFileName):
 
 
 	print("\nQrCode verification :")
-	if (True):
+	qrcodeData = image_management.decode_qrcode(path + certificateFileName)
+	print("\t--> Readed QrCode")
+	subprocess.run('''printf "{1}" | base64 -d > {0}block_cipher.txt'''.format(path, qrcodeData), shell=True,stdout=subprocess.PIPE)
+	result = str(subprocess.run('''openssl dgst -sha256 -verify {0}public.ca.key -signature {0}block_cipher.txt {0}block.txt'''.format(path), shell=True,stdout=subprocess.PIPE))
+	result = result[result.find('stdout') + 9 : -4]
+	print("\t--> Unsigned Qrcode")
+	if ("Verified OK" == result):
 		print("\t--> QrCode verification completed")
 	else:
 		print("\t--> QrCode verification failed")
@@ -81,16 +90,14 @@ def ExtrairePreuve(client,certificateFileName):
 		return "Authentification FAILED : QrCode has been altered."
 
 
+
 	print("\nRecreate image certificate :")
-	print("\t--> Create QrCode sign")
-	qrcodeData="tata"
 	print("\t--> Create assembled stego cetificate")
 	image_management.create_assembled_stegano_image(path, blockNameReturned, blockFirstNameReturned, blockEntitleReturned, block, qrcodeData)
 	print("\t--> Recreate image certificate completed")
 
-
 	print("\nCheck differences between sent and recreated certificate :")
-	if image_management.check_identity_images(path,certificateFileName,"certificate.png"):
+	if image_management.check_identity_images(path, certificateFileName,"certificate.png"):
 		print("\t--> Check differences completed")
 	else:
 		print("\t--> Check differences failed")
@@ -105,8 +112,8 @@ def ExtrairePreuve(client,certificateFileName):
 
 
 def remove_temp_file(path):
-	if os.path.isfile("{}certificate.png".format(path)):
-		subprocess.run('''rm {}certificate.png'''.format(path)     , shell = True, stdout = subprocess.PIPE)
+	#if os.path.isfile("{}certificate.png".format(path)):
+		#subprocess.run('''rm {}certificate.png'''.format(path)     , shell = True, stdout = subprocess.PIPE)
 	
 	if os.path.isfile("{}sent_certificate.png".format(path)):
 		subprocess.run('''rm {}sent_certificate.png'''.format(path), shell = True, stdout = subprocess.PIPE)
@@ -122,5 +129,11 @@ def remove_temp_file(path):
 	
 	if os.path.isfile("{}query.tmp".format(path)):
 		subprocess.run('''rm {}query.tmp'''.format(path)           , shell = True, stdout = subprocess.PIPE)
+
+	if os.path.isfile("{}block.txt".format(path)):
+		subprocess.run('''rm {}block.txt'''.format(path)           , shell = True, stdout = subprocess.PIPE)
+	
+	if os.path.isfile("{}block_cipher.txt".format(path)):
+		subprocess.run('''rm {}block_cipher.txt'''.format(path)    , shell = True, stdout = subprocess.PIPE)
 
 

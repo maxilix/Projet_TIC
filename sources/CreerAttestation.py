@@ -27,7 +27,9 @@ def CreerAttestation(client,informations):
 		create_user_auth_data(informations,path)
 
 		biBlock = data_management.create_block(path, informations[0], informations[1], informations[3])
-		qrcodeData = "tata"
+
+		result = str(subprocess.run('''printf "{1}" | openssl dgst -sha256 -sign {0}ca.key | base64'''.format(pathClient,biBlock), shell=True,stdout=subprocess.PIPE))
+		qrcodeData = result[result.find('stdout') + 9 : -4]
 		image_management.create_assembled_stegano_image(path, informations[0], informations[1], informations[3], biBlock, qrcodeData)
 
 		print("\t--> generated certificate !")
@@ -49,7 +51,7 @@ def CreerAttestation(client,informations):
 	s = smtplib.SMTP_SSL("smtp.unilim.fr",465)
 	#s.set_debuglevel(1)
 	#s.login('beltzer01', '1aAzerty')
-	s.sendmail(client[2],informations[2],secureMail)
+	#s.sendmail(client[2],informations[2],secureMail)
 	s.close()
 	print("\t--> sent mail !")
 

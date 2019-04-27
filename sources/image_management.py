@@ -21,7 +21,7 @@ def create_texte_image(path, name, firstName, entitle):
 
 def create_qrcode_image(path, data):
 	qrcodeFileName = "qrcode_image.png"
-	qr = pyqrcode.create(data)
+	qr = pyqrcode.create(data, error='H', version=10)
 	qr.png(path+qrcodeFileName, scale=2)
 	cmd = subprocess.Popen('''mogrify -resize 210x210 {0}'''.format(path+qrcodeFileName), shell=True, stdout=subprocess.PIPE)
 	cmd.communicate()
@@ -74,17 +74,15 @@ def check_identity_images(path, fileName1, fileName2):
 	im1 = Image.open(path+fileName1)
 	im2 = Image.open(path+fileName2)
 
-	if (im1.size!=im2.size):
-		return False
-
 	im1Data = list(im1.getdata())
 	im2Data = list(im2.getdata())
 
 	for i in range(len(im1Data)):
-		if (im1Data[i] != im2Data[i]):
-			return False
-
+		if (i%1753 < 1418 or i%1753 > 1628 or i//1753 < 934 or i//1753 > 1144):
+			if (im1Data[i] != im2Data[i]):
+				return False
 	return True
+
 
 
 

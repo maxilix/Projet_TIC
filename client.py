@@ -108,8 +108,8 @@ clientPassphrase = "LameSecret"
 
 
 #user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée" ]
-#user = [ "Beltzer"  , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python"  ]
-user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
+user = [ "Beltzer"  , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python"  ]
+#user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
 
 
 start_client(clientName, clientPassphrase, user)
