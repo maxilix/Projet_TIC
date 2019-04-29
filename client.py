@@ -6,10 +6,6 @@ import base64
 import subprocess
 import time
 
-#from datetime import timedelta
-#from datetime import datetime
-
-
 
 NUMERO_PORT = 8820
 
@@ -37,7 +33,7 @@ def start_client(clientName, passphrase, user):
 		sys.exit(1)
 	s.sendall(clientName.encode('UTF-8'))
 	if(s.recv(1024).decode('UTF-8') == "It seems that you are not registered in our database. Please check you spelled your name correctly or contact our customer service to get registered."):
-		print('Name not in server database')
+		print("It seems that you are not registered in our database. Please check you spelled your name correctly or contact our customer service to get registered.")
 		s.close()
 		sys.exit(1)
 	print('Name found in database - Authentification...')
@@ -96,20 +92,18 @@ def send_certificate(s):
 
 
 
-#def pause(muS):
-#	debut = datetime.now()
-#	while (True):
-#		if (datetime.now()-debut > timedelta(seconds=0, milliseconds=0, microseconds=muS)):
-#			break
+# WARNING : DO NOT USE HYPHEN OR UNDERSCORE
 
 
 clientName = "CertifPlus"
 clientPassphrase = "LameSecret"
 
-
-#user = [ "Hoffmann" , "Clement"  , "clement.hoffmann@etu.unilim.fr" , "Plongée" ]
-user = [ "Beltzer"  , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python"  ]
-#user = [ "Vollmer"  , "Morgane"  , "morgane.vollmer@etu.unilim.fr"  , "Sieste"  ]
+#user = [ "Hoffmann" , "Clement"         , "clement.hoffmann@etu.unilim.fr" , "Plongée"    ]
+#user = [ "Beltzer"  , "Baptiste"        , "baptiste.beltzer@etu.unilim.fr" , "Python"     ]
+#user = [ "Vollmer"  , "Morgane"         , "morgane.vollmer@etu.unilim.fr"  , "Sieste"     ]
+user = [ "Bonnefoi" , "Pierre François" , "bonefoi@unilim.fr"              , "Water polo" ]
+#user = [ "Conchon"  , "Emmanuel"        , "emmanuel.conchon@unilim.fr"     , "Cornemuse"  ]
 
 
 start_client(clientName, clientPassphrase, user)
+

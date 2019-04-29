@@ -1,0 +1,7 @@
+[req]
+distinguished_name=dn
+[dn]
+[ext]
+basicConstraints=CA:FALSE
+extendedKeyUsage=serverAuth,emailProtection
+keyUsage=digitalSignature,keyEncipherment

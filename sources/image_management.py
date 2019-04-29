@@ -34,10 +34,6 @@ def create_assembled_stegano_image(path, name, firstName, entitle, steganoMessag
 
 	textFileName = create_texte_image(path, name, firstName, entitle)
 
-	#f=open(path+"query.tsq",'rb')
-	#qrcodeData=f.readline()
-	#print(qrcodeData)
-	#f.close()
 	qrcodeFileName = create_qrcode_image(path,qrcodeData)
 
 	cmd = subprocess.Popen('''composite -gravity center {0}{1} ../ressources/background.png {0}before_stegano.png'''.format(path,textFileName), shell=True, stdout=subprocess.PIPE)

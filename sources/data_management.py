@@ -30,11 +30,9 @@ def cut_block(block):
 	information = block[:64]
 	timestamp_ascii = block[64:]
 
-
 	while (information[0] == '0'):
 		information = information[1:]
 
-	
 	cut_block = [information,timestamp_ascii]
 	information = cut_block[0].split('_')
 	name = information[0].replace("-"," ")

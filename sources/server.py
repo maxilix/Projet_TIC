@@ -26,7 +26,7 @@ def start_server():
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	s.bind(('', PORT_NUMBER))
 	s.listen()
-	print("Serveur started, enter not empty line to exit\n")
+	print("Serveur started, enter not empty line to exit")
 	pid = os.fork()
 	if not pid :
 		run_server(s)
@@ -56,7 +56,7 @@ def run_server(s):
 				connexion.sendall("Please generate OTP with shared secret".encode('UTF-8'))
 		if not clientNameOk:
 			connexion.sendall("It seems that you are not registered in our database. Please check you spelled your name correctly or contact our customer service to get registered.".encode('UTF-8'))
-	print("Connected client : " + client[0])
+	print("\n\nConnected client : " + client[0])
 	while True:
 		otpServer = CreerOTP(client[1])
 		otpClient = connexion.recv(32).decode('UTF-8')
@@ -115,7 +115,7 @@ def run_server(s):
 
 
 
-def get_clients():	# Return a list of clients' infos
+def get_clients():
 	f = open('../clients/clients_database', 'r')
 	fc = f.readlines()
 	clients = []

@@ -14,7 +14,6 @@ def CreerAttestation(client,informations):
 		return
 
 	path = pathClient+informations[0].replace(" ","-")+"_"+informations[1].replace(" ","-")+"_"+informations[3].replace(" ","-")+"/"
-	#print(path)
 
 	if not (os.path.isdir(path)):
 		print("generating certificate ...")
@@ -50,8 +49,7 @@ def CreerAttestation(client,informations):
 		secureMail += line
 	s = smtplib.SMTP_SSL("smtp.unilim.fr",465)
 	#s.set_debuglevel(1)
-	#s.login('beltzer01', '1aAzerty')
-	#s.sendmail(client[2],informations[2],secureMail)
+	s.sendmail(client[2],informations[2],secureMail)
 	s.close()
 	print("\t--> sent mail !")
 
@@ -79,28 +77,10 @@ def create_personal_data_file(path, name, firstName, entitle):
 
 def create_query_file(path):
 	cmd = subprocess.Popen('''openssl ts -query -data {0}personnal_data -sha1 -no_nonce -out {0}query.tsq'''.format(path) , shell=True,stdout=subprocess.PIPE)
-	#query.tsq contient la requête, empreinte calculée avec sha1
 	cmd.communicate()
 
 
-def create_timestamp_file(path):#fichier): #fichier = personnal_data_FName
-	#On envoie la requête au serveur d'horodatage
+def create_timestamp_file(path):
 	cmd = subprocess.Popen('''curl -H "Content-Type: application/timestamp-query" --data-binary '@{0}query.tsq' https://freetsa.org/tsr > {0}timestamp_sign.tsr'''.format(path) , shell=True,stdout=subprocess.PIPE)
 	cmd.communicate()
 	
-	#Recupération timestamp
-	#cmd = subprocess.Popen('''openssl ts -reply -in {0}timestamp_sign.tsr -text'''.format(path),shell=True,stdout=subprocess.PIPE)
-	#(result,ignore) = cmd.communicate()
-	#result = str(result).split('Time stamp: ')
-	#timestamp = result[1].split('\\n')[0] #timestamp en string
-	#cmd = subprocess.Popen('''date -d "{}" +%s'''.format(timestamp),shell=True,stdout=subprocess.PIPE)
-	#(result,ignore) = cmd.communicate()
-	#timestamp = str(result)[2:-3] #timestamp en seconde
-	#return timestamp
-
-
-#c = [ "CertifPlus" , "LAME6SECRET" , "ecc.certifplus.ca.pem" , "comunication@certifplus.fr" ]
-#i = [ "Beltzer" , "Baptiste" , "baptiste.beltzer@etu.unilim.fr" , "Python" ]
-
-
-#CreerAttestation(c,i)
